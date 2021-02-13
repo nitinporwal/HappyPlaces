@@ -1,12 +1,14 @@
 package com.example.happyplaces
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
 import android.webkit.PermissionRequest
@@ -81,6 +83,28 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(resultCode == Activity.RESULT_OK) {
+            if(requestCode == GALLERY) {
+                if(data != null) {
+                    val contentURI = data.data
+                    try {
+                        val selectedImageBitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, contentURI)
+                        iv_place_image.setImageBitmap(selectedImageBitmap)
+                    }
+                    catch (e: IOException) {
+                        e.printStackTrace()
+                        Toast.makeText(this, "Failed to load the image from gallery", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            else {
+
+            }
+        }
+    }
+
     private fun choosePhotoFromGallery() {
         Dexter.withActivity(this).withPermissions(
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -88,11 +112,8 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         ).withListener(object : MultiplePermissionsListener {
             override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
                 if (report!!.areAllPermissionsGranted()) {
-                    Toast.makeText(
-                        this@AddHappyPlaceActivity,
-                        "Storage READ/WRITE permission granted. Now you can select an image from gallery",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    startActivityForResult(galleryIntent, GALLERY)
                 }
             }
 
@@ -130,5 +151,9 @@ class AddHappyPlaceActivity : AppCompatActivity(), View.OnClickListener {
         val myFormat = "dd.MM.yyyy"
         val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
         et_date.setText(sdf.format(cal.time).toString())
+    }
+
+    companion object {
+        private const val GALLERY = 1
     }
 }
