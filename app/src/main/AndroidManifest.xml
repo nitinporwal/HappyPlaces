@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HappyPlaces">
         <activity
+            android:name=".activities.HappyPlaceDetailActivity"
+            android:label="HAPPY PLACE DETAILS"
+            android:screenOrientation="portrait"
+            android:theme="@style/CustomNoActionBarTheme" />
+        <activity
             android:name=".activities.AddHappyPlaceActivity"
             android:label="ADD HAPPY PLACE"
             android:screenOrientation="portrait"
