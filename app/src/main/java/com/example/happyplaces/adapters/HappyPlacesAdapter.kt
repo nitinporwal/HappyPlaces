@@ -1,5 +1,4 @@
 package com.example.happyplaces.adapters
-
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -11,10 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.happyplaces.R
 import com.example.happyplaces.activities.AddHappyPlaceActivity
 import com.example.happyplaces.activities.MainActivity
+import com.example.happyplaces.database.DatabaseHandler
 import com.example.happyplaces.models.HappyPlaceModel
 import kotlinx.android.synthetic.main.activity_add_happy_place.view.iv_place_image
 import kotlinx.android.synthetic.main.item_happy_place.view.*
-
 open class HappyPlacesAdapter(private val context: Context, private val list: ArrayList<HappyPlaceModel>): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var onClickListener: OnClickListener? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -26,15 +25,12 @@ open class HappyPlacesAdapter(private val context: Context, private val list: Ar
             )
         )
     }
-
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val model = list[position]
-
         if(holder is MyViewHolder) {
             holder.itemView.iv_place_image.setImageURI(Uri.parse(model.image))
             holder.itemView.tvTitle.text = model.title
             holder.itemView.tvDescription.text = model.description
-
             holder.itemView.setOnClickListener{
                 if(onClickListener != null) {
                     onClickListener!!.onClick(position, model)
@@ -42,7 +38,6 @@ open class HappyPlacesAdapter(private val context: Context, private val list: Ar
             }
         }
     }
-
     fun notifyEditItem(activity: Activity, position: Int, requestCode: Int) {
         val intent = Intent(context, AddHappyPlaceActivity::class.java)
         intent.putExtra(MainActivity.EXTRA_PLACE_DETAILS, list[position])
@@ -50,18 +45,24 @@ open class HappyPlacesAdapter(private val context: Context, private val list: Ar
         notifyItemChanged(position)
     }
 
+    fun removeAt(position: Int) {
+        val dbHandler = DatabaseHandler(context)
+        val isDeleted = dbHandler.deleteHappyPlace(list[position])
+
+        if(isDeleted > 0) {
+            list.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
+
     override fun getItemCount(): Int {
         return list.size
     }
-
     interface OnClickListener {
         fun onClick(position: Int, model: HappyPlaceModel)
     }
-
     fun setOnClickListener(onClickListener: OnClickListener) {
         this.onClickListener = onClickListener
     }
-
     private class MyViewHolder(view: View): RecyclerView.ViewHolder(view)
-
 }
